@@ -88,4 +88,57 @@ The function `safeHead` works on any `List` with elements of type `a`.
 Type classes
 ============
 
-Use the `class` keyword.
+There is another way of polymorphism, called *ad-hoc polymorphism*, which
+is used when you don't want a function to work for every type, but only for
+some types. The function `(+)` is a good example: it should only have to
+work for `Ints`, `Integer`s, `Double`s, etc.
+
+*Ad-hoc polymorphism* is achieved in Haskell using **type classes**, for
+which the `class` keyword is reserved:
+
+```
+class Eq a where
+  (==) :: a -> a -> Bool
+  (/=) :: a -> a -> Bool
+```
+
+Type classes define a set of operations that work on *class instances*.
+A class instance is a type which defines these functions. For this, the
+`instance` keyword is reserved:
+
+```
+Data Foo = F Int
+
+instance Eq Foo where
+  (F x) == (F y) = x == y
+```
+
+Type classes can also contain default implementations. For example, the
+`(/=)` function of the `Eq` class is defined using the negation of `(==)`:
+
+```
+x /= y = not (x == y)
+```
+
+Another possibility is to do the following:
+
+```
+x == y = not (x /= y)
+```
+
+You can also define both in terms of the other, which is what the `Eq`
+class does. Then you only have to define one of the two functions. If you
+don't do that however, you get infinite recursion.
+
+##Type classes and Java interfaces
+
+There are some similarities between type classes and *Java interfaces*:
+both define functions with either a default implementation, or no
+implementation. Different types can implement these functions.
+
+However, Haskell's type classes can also work on multiple type parameters:
+
+```
+class Blerg a b where
+  blerg :: a -> b -> Bool
+```
