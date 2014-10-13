@@ -1,4 +1,4 @@
-module HW04 where
+module HW05 where
 
 import Ring
 import Parser
@@ -41,4 +41,5 @@ testMod5ParseMul = parseRing "4 * 3" == Just(MkMod 2)
 testMod5ParseMulAndAdd :: Bool
 testMod5ParseMulAndAdd = parseRing "4 + 3 * 2" == Just(MkMod 0)
 
+testMod5AddInv :: Bool
 testMod5AddInv = addInv (MkMod 13) == (MkMod 2)
