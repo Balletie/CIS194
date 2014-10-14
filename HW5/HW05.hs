@@ -3,6 +3,7 @@ module HW05 where
 import Ring
 import Parser
 import Data.Maybe    ( listToMaybe )
+import Data.Char
 
 data Mod5 = MkMod Integer
   deriving (Read, Show, Eq)
@@ -43,3 +44,26 @@ testMod5ParseMulAndAdd = parseRing "4 + 3 * 2" == Just(MkMod 0)
 
 testMod5AddInv :: Bool
 testMod5AddInv = addInv (MkMod 13) == (MkMod 2)
+
+data Mat2x2 = Mat Integer Integer Integer Integer
+  deriving (Read, Eq)
+
+instance Show Mat2x2 where
+  show (Mat a b c d) = "[[" ++ show a ++ "," ++ show b ++ "]["
+                            ++ show c ++ "," ++ show d ++ "]]"
+
+instance Parsable Mat2x2 where
+  parse x = (eatInts x) >>= makeMat
+            where makeMat (x:y:z:w:[], string) = Just ((Mat x y z w), string)
+                  makeMat _                    = Nothing
+
+-- |Simple implementation: just "eat" integers until we reach "]]"
+-- Don't use spaces inside the matrix (especially not before the "]]")
+eatInts :: String -> Maybe ([Integer], String)
+eatInts (']':']':xs) = Just ([], xs)
+eatInts x            = (readInt x) >>= (addToMaybe)
+    where addToMaybe (int, string) = eatInts string >>= addToList int
+          addToList int (xs,str) = Just(int:xs, str)
+
+readInt :: String -> Maybe (Integer, String)
+readInt = listToMaybe . reads . dropWhile (not . isDigit)
