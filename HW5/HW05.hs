@@ -22,7 +22,11 @@ instance Parsable Mod5 where
         parseInt = parse :: String -> Maybe(Integer, String)
         toMod (a,b) = (MkMod a, b)
 
--- | Use testMod5 to use all tests
+-- | Test everything
+testAll = testMod5 &&
+          testMat2x2
+
+-- | Use testMod5 to use all tests for Mod5
 testMod5 :: Bool
 testMod5 = testMod5ParseLiteral   &&
            testMod5ParseAdd       &&
@@ -52,6 +56,17 @@ instance Show Mat2x2 where
   show (Mat a b c d) = "[[" ++ show a ++ "," ++ show b ++ "]["
                             ++ show c ++ "," ++ show d ++ "]]"
 
+instance Ring Mat2x2 where
+  addId = Mat 0 0 0 0
+  addInv (Mat a b c d) = Mat (-a) (-b) (-c) (-d)
+  mulId = Mat 1 0 0 1
+
+  add (Mat a b c d)
+      (Mat x y z w) = Mat (a+x) (b+y) (c+z) (d+w)
+
+  mul (Mat a b c d)
+      (Mat x y z w) = Mat (a*x + b*z) (a*y + b*w) (c*x + d*z) (c*y + d*w)
+
 instance Parsable Mat2x2 where
   parse x = (eatInts x) >>= makeMat
             where makeMat (x:y:z:w:[], string) = Just ((Mat x y z w), string)
@@ -67,3 +82,30 @@ eatInts x            = (readInt x) >>= (addToMaybe)
 
 readInt :: String -> Maybe (Integer, String)
 readInt = listToMaybe . reads . dropWhile (not . isDigit)
+
+-- | Use testMat2x2 to use all tests for Mat2x2
+testMat2x2 = testMat2x2ParseLiteral &&
+             testMat2x2ParseAdd &&
+             testMat2x2ParseMul &&
+             testMat2x2ParseMulNonComm &&
+             testMat2x2AddInv
+
+testMat2x2ParseLiteral :: Bool
+testMat2x2ParseLiteral = parse (show (Mat 1 2 3 4)) == Just(Mat 1 2 3 4, "")
+
+testMat2x2ParseAdd :: Bool
+testMat2x2ParseAdd = parseRing "[[1,2][3,4]] + [[4,3][2,1]]"
+                     == Just(Mat 5 5 5 5)
+
+testMat2x2ParseMul :: Bool
+testMat2x2ParseMul = parseRing "[[4,3][2,1]] * [[1,2][3,4]]"
+                     == Just(Mat 13 20 5 8)
+
+testMat2x2ParseMulNonComm :: Bool
+testMat2x2ParseMulNonComm =
+       (parseRing "[[4,3][2,1]] * [[1,2][3,4]]" :: Maybe Mat2x2)
+    /= (parseRing "[[1,2][3,4]] * [[4,3][2,1]]" :: Maybe Mat2x2)
+
+testMat2x2AddInv :: Bool
+testMat2x2AddInv = ((Mat 1 (-4) (-2) 3) `add` addInv (Mat 1 (-4) (-2) 3))
+                   == (Mat 0 0 0 0)
