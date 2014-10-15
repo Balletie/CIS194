@@ -24,7 +24,8 @@ instance Parsable Mod5 where
 
 -- | Test everything
 testAll = testMod5 &&
-          testMat2x2
+          testMat2x2 &&
+          testBool
 
 -- | Use testMod5 to use all tests for Mod5
 testMod5 :: Bool
@@ -109,3 +110,34 @@ testMat2x2ParseMulNonComm =
 testMat2x2AddInv :: Bool
 testMat2x2AddInv = ((Mat 1 (-4) (-2) 3) `add` addInv (Mat 1 (-4) (-2) 3))
                    == (Mat 0 0 0 0)
+
+instance Ring Bool where
+  addId = False
+  addInv = id
+  mulId = True
+
+  -- | Same behaviour as XOR, but there's no function defined so I chose
+  -- not equal.
+  add = (/=)
+  mul = (&&)
+
+instance Parsable Bool where
+  parse = listToMaybe . reads
+
+testBool = testBoolParseLiteral &&
+           testBoolParseAdd &&
+           testBoolParseMul &&
+           testBoolAddInv
+
+testBoolParseLiteral :: Bool
+testBoolParseLiteral = parse "True 234" == Just(True, " 234")
+
+testBoolParseAdd :: Bool
+testBoolParseAdd = parseRing "True + True" == Just False
+
+testBoolParseMul :: Bool
+testBoolParseMul = parseRing "True * True" == Just True
+
+testBoolAddInv :: Bool
+testBoolAddInv = addInv True == True &&
+                 addInv False == False
