@@ -141,3 +141,7 @@ testBoolParseMul = parseRing "True * True" == Just True
 testBoolAddInv :: Bool
 testBoolAddInv = addInv True == True &&
                  addInv False == False
+
+distribute :: RingExpr a -> RingExpr a
+distribute (Mul z (Add x y)) = Add (Mul z x) (Mul z y)
+distribute (Mul (Add x y) z) = Add (Mul x z) (Mul y z)
